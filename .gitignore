@@ -6,12 +6,6 @@ __pycache__/
 
 **/.DS_Store
 /.idea
-
+/bin
 lib/python3.9/site-packages/*
 
-Problem1.py
-Problem3.py
-breadth-first-search.py
-depth-first-search.py
-depth_first_search_2.py
-pyvenv.cfg
