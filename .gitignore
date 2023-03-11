@@ -6,6 +6,6 @@ __pycache__/
 
 **/.DS_Store
 .idea
-bin
+/bin
 
 lib/python3.9/site-packages/*
