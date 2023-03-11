@@ -1,0 +1,1 @@
+requests  # let the other dependencies sort out which is the right version
