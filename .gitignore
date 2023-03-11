@@ -8,9 +8,9 @@ __pycache__/
 /.idea
 
 lib/python3.9/site-packages/*
+bin/
 
-Problem1.py
-Problem3.py
+
 breadth-first-search.py
 depth-first-search.py
 depth_first_search_2.py
