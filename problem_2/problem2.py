@@ -153,7 +153,6 @@ def get_route_stops_v2():
     for subway_route in filter_subway_routes():
         list_of_subway_route_ids.append(subway_route['id'])
 
-    start = time.time()
     route = {}
     for ID in list_of_subway_route_ids:
         r = requests.get('https://api-v3.mbta.com/stops?fields[stop]=name&include=route&filter[route]=' + ID)
@@ -164,18 +163,40 @@ def get_route_stops_v2():
             route_id.append(d['attributes']['name'])
 
         route[ID] = route_id
-    end = time.time()
 
-    print(route)
-    print(end - start)
 
+def get_all_stops_v2():
+    subway_route_ids = ""
+    #
+    for subway_route in filter_subway_routes():
+        subway_route_ids += (subway_route['id'] + ",")
+
+    subway_route_ids = subway_route_ids[:-1]
+
+    r = requests.get('https://api-v3.mbta.com/stops?filter[route]=' + subway_route_ids,
+                     headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"})
+    data = r.json()['data']
+
+    all_subways = []
+    for subways in data:
+        all_subways.append(subways['attributes']['name'])
+
+    return all_subways
 
 def main():
-    # get_route_stops_v2()
 
-    print(get_routes_of_connecting_stops())
 
-    # print(get_routes_of_connecting_stops_v2())
+    start = time.time()
+    print(get_all_stops_v2())
+    end = time.time()
+
+    print(end-start)
+
+    start = time.time()
+    print(get_all_stops())
+    end = time.time()
+    print(end - start)
+
 
 
 if __name__ == "__main__":
