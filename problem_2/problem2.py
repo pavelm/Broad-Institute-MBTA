@@ -185,17 +185,27 @@ def get_all_stops_v2():
 
 def main():
 
+    v1_time_list = []
+    for i in range(10):
+        start = time.time()
+        get_all_stops()
+        end = time.time()
+        v1_time_list.append(end - start)
 
-    start = time.time()
-    print(get_all_stops_v2())
-    end = time.time()
+    # average time of the first version
+    print(sum(v1_time_list) / len(v1_time_list))
 
-    print(end-start)
 
-    start = time.time()
-    print(get_all_stops())
-    end = time.time()
-    print(end - start)
+    v2_time_list = []
+    for i in range(10):
+        start = time.time()
+        get_all_stops_v2()
+        end = time.time()
+        v2_time_list.append(end-start)
+
+    # average time of the second version
+    print(sum(v2_time_list) / len(v2_time_list))
+
 
 
 
