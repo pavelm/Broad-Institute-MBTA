@@ -80,6 +80,7 @@ def route_with_least_stops(sorted_route_dict):
     logging.info("Subway route with the least number of stops: " + str(list(sorted_route_dict.keys())[0]))
     logging.info("Stops: " + str(len(list(sorted_route_dict.values())[0])) + "\n")
 
+
 # get all the subway stops
 def get_all_stops(route_stops):
     # get all the stops
@@ -112,7 +113,6 @@ def get_connecting_stops(all_stops):
 
 # gets the routes of all the connecting stops that travels through it
 def get_routes_of_connecting_stops(connecting_stops, route_stop_dict):
-
     connecting_stops_dict = {}
 
     # for each route
@@ -133,15 +133,12 @@ def get_routes_of_connecting_stops(connecting_stops, route_stop_dict):
 
 
 def print_all_routes_of_connecting_stops(connecting_stops_dict):
-
     for connecting_stop, list_of_route_names in connecting_stops_dict.items():
         logging.info("Connecting Stop: " + connecting_stop)
         logging.info("Routes at " + connecting_stop + ": " + str(list_of_route_names) + "\n")
 
 
-
 def main():
-
     start = time.time()
     sorted_route_stop_dict = sort_route_stops(asyncio.run(get_route_stops()))
     all_stops = get_all_stops(sorted_route_stop_dict)
@@ -154,7 +151,7 @@ def main():
     print_all_routes_of_connecting_stops(routes_connecting_stop_dict)
     end = time.time()
 
-    logging.info(end-start)
+    logging.info(end - start)
 
 
 if __name__ == "__main__":
