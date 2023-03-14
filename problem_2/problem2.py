@@ -157,8 +157,6 @@ def main():
     logging.info(end-start)
 
 
-
-
 if __name__ == "__main__":
     main()
 

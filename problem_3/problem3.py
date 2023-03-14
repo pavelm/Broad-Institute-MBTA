@@ -179,7 +179,7 @@ def find_subway_path(start, finish, route_stops_dict, line_dict):
 
 def main():
 
-    
+
     route_stops_dict = asyncio.run(get_route_stops())
     all_stops = get_all_stops(route_stops_dict)
     connecting_stops = get_connecting_stops(all_stops)
@@ -187,6 +187,7 @@ def main():
 
     line_dict = get_line_dict(connecting_stops_dict,  route_stops_dict)
 
+    # next stage, taking inputs from user and validating 
     logging.info(find_subway_path("Ashmont", "Arlington", route_stops_dict, line_dict))
 
 
