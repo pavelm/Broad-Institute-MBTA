@@ -1,6 +1,5 @@
 import requests
 import logging
-import asyncio
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,12 +22,6 @@ def filter_subway_routes():
 
     return subway_routes
 
-
-def get_tasks(session):
-    tasks = []
-    for symbol in symbols:
-        tasks.append(asyncio.create_task(session.get(url.format(symbol, api_key), ssl=False)))
-    return tasks
 
 # prints the long_name of subway routes
 def print_filtered_subway_routes(list_of_subway_routes):
