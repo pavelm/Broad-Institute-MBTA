@@ -126,7 +126,6 @@ def get_routes_of_connecting_stops():
 
 
 def get_line_dict(connecting_stops, route_stops):
-
     line_dict = {}
 
     # create dictionary, each key is the route id and each value is the list of lines connected to it
@@ -145,7 +144,6 @@ def get_line_dict(connecting_stops, route_stops):
                         line_dict[route_id].append(stop)
 
     return line_dict
-
 
 
 graph = get_line_dict(get_routes_of_connecting_stops(), get_route_stops())
@@ -191,7 +189,6 @@ def find_subway_path(start, finish):
             break
 
     return dfs(starting_location_subway_line, end_location_subway_line)
-
 
 
 def main():
