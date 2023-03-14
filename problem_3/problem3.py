@@ -1,17 +1,10 @@
+import logging
 import requests
 import time
+import asyncio
+import aiohttp
 
-
-# Problem 3
-# List a rail route you could travel to get from one stop to the other.
-# if I wanted to pursue efficiency and the shortest path, I would use Dijkstra's algorithm using longitude / latitude
-
-# using depth first search because it's used for connected components in undirected graphs
-# there's a lot of thought and consideration that goes into which graph searching algorithm and I think a
-
-# Why? Considering the searched node or end_location is reachable after some edges from the original source
-# considering the edges are lists that we have to see if the end_location is in, we aren't doing as much searching
-#
+logging.basicConfig(level=logging.INFO)
 
 
 def filter_subway_routes():
@@ -35,7 +28,16 @@ def filter_subway_routes():
     return subway_routes
 
 
-def get_route_stops():
+def get_tasks(session, list_of_subway_route_ids):
+    tasks = []
+    for subway_id in list_of_subway_route_ids:
+        tasks.append(asyncio.create_task(
+            session.get('https://api-v3.mbta.com/stops?filter[route]=' + str(subway_id),
+                        headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"}, ssl=False)))
+    return tasks
+
+
+async def get_route_stops():
     # https://groups.google.com/g/massdotdevelopers/c/WiJUyGIpHdI
 
     # list of all the subway route id's
@@ -44,48 +46,28 @@ def get_route_stops():
     for subway_route in filter_subway_routes():
         list_of_subway_route_ids.append(subway_route['id'])
 
-    # I chose a dictionary data type, so I can hold both the name of the route and the list of stops
-    route_dict = {}
+    async with aiohttp.ClientSession() as session:
 
-    # create a dictionary of subway route id and list of the stops
-    # for each subway_route_id in list_of_subway_route_ids, get the stops for each subway route
-    for subway_route_id in list_of_subway_route_ids:
+        tasks = get_tasks(session, list_of_subway_route_ids)
+        data = await asyncio.gather(*tasks)
 
-        r = requests.get('https://api-v3.mbta.com/stops?filter[route]=' + subway_route_id,
-                         headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"})
+        route_stop_dict = {}
 
-        stops = r.json()['data']
+        for index in range(len(data)):
+            subway_line_data = await (data[index]).json()
 
-        # list of stops
-        route_stops = []
+            subway_line_data = subway_line_data['data']
 
-        # get the stops name
-        for stop in stops:
-            route_stops.append(stop['attributes']['name'])
+            route_stop_dict[list_of_subway_route_ids[index]] = []
+            for stops in subway_line_data:
+                route_stop_dict[list_of_subway_route_ids[index]].append((stops['attributes']['name']))
 
-        route_dict[subway_route_id] = route_stops
-
-    return route_dict
+        return route_stop_dict
 
 
-# get all the subway stops
-def get_all_stops():
-    # get all the stops
-    all_stops = []
-
-    start = time.time()
-    # gets all stops from dictionary
-    for stops in get_route_stops().values():
-        all_stops.extend(stops)
-
-    end = time.time()
-
-    return all_stops
-
-
-def get_connecting_stops():
+# A list of the stops that connect two or more subway routes along with the relevant route names for each of those stops
+def get_connecting_stops(all_stops):
     # list of all subway stops
-    all_stops = get_all_stops()
 
     # list of connecting stops
     connecting_stops = []
@@ -102,10 +84,7 @@ def get_connecting_stops():
 
 
 # gets the routes of all the connecting stops that travels through it
-def get_routes_of_connecting_stops():
-    route_stop_dict = get_route_stops()
-    connecting_stops = get_connecting_stops()
-
+def get_routes_of_connecting_stops(connecting_stops, route_stop_dict):
     connecting_stops_dict = {}
 
     # for each route
@@ -123,6 +102,17 @@ def get_routes_of_connecting_stops():
                 connecting_stops_dict[connecting_stop] = connecting_stops_dict[connecting_stop] + [route]
 
     return connecting_stops_dict
+
+
+def get_all_stops(route_stops):
+    # get all the stops
+    all_stops = []
+
+    # gets all stops from dictionary
+    for stops in route_stops.values():
+        all_stops.extend(stops)
+
+    return all_stops
 
 
 def get_line_dict(connecting_stops, route_stops):
@@ -146,53 +136,58 @@ def get_line_dict(connecting_stops, route_stops):
     return line_dict
 
 
-graph = get_line_dict(get_routes_of_connecting_stops(), get_route_stops())
-
-
 # https://stackabuse.com/courses/graphs-in-python-theory-and-implementation/lessons/depth-first-search-dfs-algorithm/
-def dfs(start, target, path=[], visited=set()):
+def dfs(start, target, line_dict, path=[], visited=set()):
     path.append(start)
     visited.add(start)
 
     if start == target:
         return path
 
-    for neighbour in graph[start]:
+    for neighbour in line_dict[start]:
         if neighbour not in visited:
 
-            if target in graph[start]:
+            if target in line_dict[start]:
                 path.append(target)
                 return path
 
-            result = dfs(neighbour, target, path, visited)
+            result = dfs(neighbour, target, path, visited, line_dict)
             if result is not None:
                 return result
     path.pop()
     return None
 
 
-def find_subway_path(start, finish):
-    route_stop_dict = get_route_stops()
-
+def find_subway_path(start, finish, route_stops_dict, line_dict):
     starting_location_subway_line = ""
     end_location_subway_line = ""
 
     # instead of thinking about stop - stop, thinking about line - line is easier
-    for subway_route, subway_stops in route_stop_dict.items():
+    for subway_route, subway_stops in route_stops_dict.items():
         if start in subway_stops:
             starting_location_subway_line = subway_route
             break
 
-    for subway_route, subway_stops in route_stop_dict.items():
+    for subway_route, subway_stops in route_stops_dict.items():
         if finish in subway_stops:
             end_location_subway_line = subway_route
             break
 
-    return dfs(starting_location_subway_line, end_location_subway_line)
+
+    return dfs(starting_location_subway_line, end_location_subway_line, line_dict)
 
 
 def main():
-    print(find_subway_path("Ashmont", "Arlington"))
+
+    
+    route_stops_dict = asyncio.run(get_route_stops())
+    all_stops = get_all_stops(route_stops_dict)
+    connecting_stops = get_connecting_stops(all_stops)
+    connecting_stops_dict = get_routes_of_connecting_stops(connecting_stops, route_stops_dict)
+
+    line_dict = get_line_dict(connecting_stops_dict,  route_stops_dict)
+
+    logging.info(find_subway_path("Ashmont", "Arlington", route_stops_dict, line_dict))
 
 
 main()
