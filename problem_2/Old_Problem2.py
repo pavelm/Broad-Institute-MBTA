@@ -1,8 +1,8 @@
 import requests
 import logging
 import time
+import json
 import asyncio
-import aiohttp
 
 logging.basicConfig(level=logging.INFO)
 
@@ -10,8 +10,11 @@ logging.basicConfig(level=logging.INFO)
 # purpose: returns a list of routes with the specific filter given in the arguments
 def filter_subway_routes():
     # Rely on the server API to filter before results are received
+    start = time.time()
     r = requests.get('https://api-v3.mbta.com/routes?filter[type]=0,1',
                      headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"})
+
+    end = time.time()
 
     # gets the data from the api filter
     data = r.json()['data']
@@ -26,16 +29,8 @@ def filter_subway_routes():
     return subway_routes
 
 
-def get_tasks(session, list_of_subway_route_ids):
-    tasks = []
-    for subway_id in list_of_subway_route_ids:
-        tasks.append(asyncio.create_task(
-            session.get('https://api-v3.mbta.com/stops?filter[route]=' + str(subway_id),
-                        headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"}, ssl=False)))
-    return tasks
-
-
-async def get_route_stops():
+# gets the stops for each route
+def get_route_stops():
     # https://groups.google.com/g/massdotdevelopers/c/WiJUyGIpHdI
 
     # list of all the subway route id's
@@ -44,29 +39,34 @@ async def get_route_stops():
     for subway_route in filter_subway_routes():
         list_of_subway_route_ids.append(subway_route['id'])
 
-    async with aiohttp.ClientSession() as session:
+    # I chose a dictionary data type, so I can hold both the name of the route and the list of stops
+    route_dict = {}
 
-        tasks = get_tasks(session, list_of_subway_route_ids)
-        data = await asyncio.gather(*tasks)
+    # create a dictionary of subway route id and list of the stops
+    # for each subway_route_id in list_of_subway_route_ids, get the stops for each subway route
+    for subway_route_id in list_of_subway_route_ids:
 
-        route_stop_dict = {}
+        r = requests.get('https://api-v3.mbta.com/stops?filter[route]=' + subway_route_id,
+                         headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"})
 
-        for index in range(len(data)):
-            subway_line_data = await (data[index]).json()
+        stops = r.json()['data']
 
-            subway_line_data = subway_line_data['data']
+        # list of stops
+        route_stops = []
 
-            route_stop_dict[list_of_subway_route_ids[index]] = []
-            for stops in subway_line_data:
-                route_stop_dict[list_of_subway_route_ids[index]].append((stops['attributes']['name']))
+        # get the stops name
+        for stop in stops:
+            route_stops.append(stop['attributes']['name'])
 
-        return route_stop_dict
+        route_dict[subway_route_id] = route_stops
+
+    return route_dict
 
 
 # sorts the stops in length of stops
-def sort_route_stops(route_stops):
+def sort_route_stops():
     #  https://www.freecodecamp.org/news/sort-dictionary-by-value-in-python/
-    return dict(sorted(route_stops.items(), key=lambda x: len(x[1])))
+    return dict(sorted(get_route_stops().items(), key=lambda x: len(x[1])))
 
 
 # print the  name of the subway route with the most stops as well as a count of its stops.
@@ -80,21 +80,26 @@ def route_with_least_stops(sorted_route_dict):
     logging.info("Subway route with the least number of stops: " + str(list(sorted_route_dict.keys())[0]))
     logging.info("Stops: " + str(len(list(sorted_route_dict.values())[0])) + "\n")
 
+
 # get all the subway stops
-def get_all_stops(route_stops):
+def get_all_stops():
     # get all the stops
     all_stops = []
 
+    start = time.time()
     # gets all stops from dictionary
-    for stops in route_stops.values():
+    for stops in get_route_stops().values():
         all_stops.extend(stops)
+
+    end = time.time()
 
     return all_stops
 
 
 # A list of the stops that connect two or more subway routes along with the relevant route names for each of those stops
-def get_connecting_stops(all_stops):
+def get_connecting_stops():
     # list of all subway stops
+    all_stops = get_all_stops()
 
     # list of connecting stops
     connecting_stops = []
@@ -111,7 +116,9 @@ def get_connecting_stops(all_stops):
 
 
 # gets the routes of all the connecting stops that travels through it
-def get_routes_of_connecting_stops(connecting_stops, route_stop_dict):
+def get_routes_of_connecting_stops():
+    route_stop_dict = get_route_stops()
+    connecting_stops = get_connecting_stops()
 
     connecting_stops_dict = {}
 
@@ -132,7 +139,8 @@ def get_routes_of_connecting_stops(connecting_stops, route_stop_dict):
     return connecting_stops_dict
 
 
-def print_all_routes_of_connecting_stops(connecting_stops_dict):
+def print_all_routes_of_connecting_stops():
+    connecting_stops_dict = get_routes_of_connecting_stops()
 
     for connecting_stop, list_of_route_names in connecting_stops_dict.items():
         logging.info("Connecting Stop: " + connecting_stop)
@@ -140,19 +148,15 @@ def print_all_routes_of_connecting_stops(connecting_stops_dict):
 
 
 
+
 def main():
 
     start = time.time()
-    sorted_route_stop_dict = sort_route_stops(asyncio.run(get_route_stops()))
-    all_stops = get_all_stops(sorted_route_stop_dict)
-    connecting_stops = get_connecting_stops(all_stops)
-
-    route_with_most_stops(sorted_route_stop_dict)
-    route_with_least_stops(sorted_route_stop_dict)
-
-    routes_connecting_stop_dict = get_routes_of_connecting_stops(connecting_stops, sorted_route_stop_dict)
-    print_all_routes_of_connecting_stops(routes_connecting_stop_dict)
+    route_with_least_stops(sort_route_stops())
+    route_with_most_stops(sort_route_stops())
+    print_all_routes_of_connecting_stops()
     end = time.time()
+
 
     logging.info(end-start)
 
@@ -161,5 +165,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# https://www.youtube.com/watch?v=nFn4_nA_yk8
