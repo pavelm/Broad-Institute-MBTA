@@ -181,37 +181,6 @@ async def get_all_stops_v2():
     return all_subways
 
 
-async def get_route_stops_v3(loop, routes):
-    stop_dict = {}
-    stop_counts = {}
-    try:
-        futures = [loop.run_in_executor(None, requests.get,
-                                        f'https://api-v3.mbta.com/stops?filter[route]={r}')
-                   for r in routes]
-    except requests.exceptions.ConnectionError:
-        print(requests.exceptions.RequestException)
-        return None
-    for response in await asyncio.gather(*futures):
-        if response.status_code == 200:
-            json_resp = response.json()
-            if json_resp['data']:
-                route = json_resp['data'][0]['relationships']['route']['data'][
-                    'id']  # just need 1st element to get route
-                stop_counts[route] = len(json_resp['data'])
-
-                for stop in json_resp['data']:
-                    stop_name = stop['attributes']['name']
-                    if stop_name in stop_dict:
-                        stop_dict[stop_name].append(route)
-                    else:
-                        stop_dict[stop_name] = [route]
-                pass
-            else:
-                print(f'No json data to read, possible bad request: {routes}')
-                return None
-        else:
-            print(f'API call failed with code {response.status_code} : {response.text}')
-            return None  # data won't be accurate if an error is thrown for a given api call, so exiting call loop
 
 def main():
     # v1_time_list = []
@@ -251,11 +220,7 @@ def main():
     for subway_route in filter_subway_routes():
         list_of_subway_route_ids.append(subway_route['id'])
 
-    start = time.time()
-    loop.run_until_complete(get_route_stops_v3(loop, list_of_subway_route_ids))
-    end = time.time()
 
-    print(end-start)
 
 if __name__ == "__main__":
     main()
