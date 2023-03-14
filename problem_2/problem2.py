@@ -154,6 +154,8 @@ def main():
     print_all_routes_of_connecting_stops(routes_connecting_stop_dict)
     end = time.time()
 
+    logging.info(end-start)
+
 
 
 
