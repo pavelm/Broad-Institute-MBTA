@@ -29,4 +29,9 @@ def print_filtered_subway_routes(list_of_subway_routes):
         logging.info(" " + subway_route['attributes']['long_name'])
 
 
-print_filtered_subway_routes(filter_subway_routes())
+def main():
+    print_filtered_subway_routes(filter_subway_routes())
+
+
+if __name__ == "__main__":
+    main()
