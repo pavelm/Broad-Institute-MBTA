@@ -59,9 +59,7 @@ def get_line_dict(connecting_stops, route_stops):
 
 # https://stackabuse.com/courses/graphs-in-python-theory-and-implementation/lessons/depth-first-search-dfs-algorithm/
 # depth first search graph searching algorithm refactored to MBTA
-def dfs(start, target, line_dict):
-    path = []
-    visited = set()
+def dfs(start, target, line_dict, path=[], visited=set()):
 
     path.append(start)
     visited.add(start)
@@ -70,22 +68,23 @@ def dfs(start, target, line_dict):
         return path
 
     for neighbour in line_dict[start]:
+
         if neighbour not in visited:
 
             if target in line_dict[start]:
                 path.append(target)
                 return path
 
-            result = dfs(neighbour, target, line_dict)
+            result = dfs(neighbour, target, line_dict, path, visited)
             if result is not None:
                 return result
+
     path.pop()
     return None
 
 
 # finds the path of a starting and final destination
 def find_subway_path(start, finish, route_stops_dict, line_dict):
-
     starting_location_subway_line = ""
 
     end_location_subway_line = ""
@@ -109,7 +108,6 @@ def find_subway_path(start, finish, route_stops_dict, line_dict):
 
 
 def main():
-
     start_location = input("Starting point station: ")
 
     finish_location = input("Final point station: ")
