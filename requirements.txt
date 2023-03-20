@@ -1,1 +1,3 @@
-requests  # let the other dependencies sort out which is the right version
+requests~=2.22.0
+
+aiohttp~=3.8.4
