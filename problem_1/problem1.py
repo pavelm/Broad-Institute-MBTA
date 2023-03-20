@@ -1,7 +1,8 @@
 import requests
 import logging
+import time
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 
 
 # purpose: returns a list of routes with the specific filter given in the arguments
@@ -23,14 +24,34 @@ def filter_subway_routes():
     return subway_routes
 
 
-# prints the long_name of subway routes
-def print_filtered_subway_routes(list_of_subway_routes):
+# gets the long names of the subway routes
+def get_long_names(list_of_subway_routes):
+    list_of_subway_routes_long_names = []
+
     for subway_route in list_of_subway_routes:
-        logging.info(" " + subway_route['attributes']['long_name'])
+        list_of_subway_routes_long_names.append(subway_route['attributes']['long_name'])
+
+    return list_of_subway_routes_long_names
+
+
+# prints the long_name of subway routes
+def print_filtered_subway_routes(list_of_subway_routes_long_names):
+    for subway_route_long_name in list_of_subway_routes_long_names:
+        logging.info(subway_route_long_name)
 
 
 def main():
-    print_filtered_subway_routes(filter_subway_routes())
+    start = time.time()
+
+    list_of_filtered_subway_routes = filter_subway_routes()
+
+    list_of_filtered_subway_routes_long_names = get_long_names(list_of_filtered_subway_routes)
+
+    print_filtered_subway_routes(list_of_filtered_subway_routes_long_names)
+
+    end = time.time()
+
+    logging.info("Time: " + str(end - start))
 
 
 if __name__ == "__main__":

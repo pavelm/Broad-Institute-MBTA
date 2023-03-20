@@ -140,7 +140,9 @@ def get_line_dict(connecting_stops, route_stops):
 
 
 # https://stackabuse.com/courses/graphs-in-python-theory-and-implementation/lessons/depth-first-search-dfs-algorithm/
-def dfs(start, target, line_dict, path=[], visited=set()):
+def dfs(start, target, line_dict):
+    path=[]
+    visited=set()
 
     path.append(start)
     visited.add(start)
@@ -202,7 +204,7 @@ def main():
     logging.info(find_subway_path(starting_stop, final_stop, route_stops_dict, line_dict))
     end = time.time()
 
-    logging.info(f"Time: " + str(end - start))
+    logging.info("Time: " + str(end - start))
 
 
 main()
