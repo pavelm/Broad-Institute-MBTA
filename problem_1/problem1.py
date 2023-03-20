@@ -5,7 +5,7 @@ import time
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 
 
-# purpose: returns a list of routes with the specific filter given in the arguments
+# returns a list of routes with the specific filter given in the arguments
 def filter_subway_routes():
     # Rely on the server API to filter before results are received
     r = requests.get('https://api-v3.mbta.com/routes?filter[type]=0,1',
