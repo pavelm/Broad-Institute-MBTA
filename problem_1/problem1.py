@@ -51,7 +51,7 @@ def main():
 
     end = time.time()
 
-    logging.info("Time: " + str(end - start))
+    logging.info("Run time: " + str(end - start))
 
 
 if __name__ == "__main__":
