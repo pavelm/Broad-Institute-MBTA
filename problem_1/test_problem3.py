@@ -26,10 +26,9 @@ class MyTestCase(unittest.TestCase):
 
         # stops on route line that are connecting to other route lines
         routes_connecting_stop_dict = get_routes_of_connecting_stops(connecting_stops, route_stops)
-        #
+
         line_dict = get_line_dict(routes_connecting_stop_dict, route_stops)
 
-        print(line_dict)
         self.assertTrue('Green Line B' in line_dict['Red Line'])
         self.assertTrue('Green Line C' in line_dict['Red Line'])
         self.assertTrue('Green Line D' in line_dict['Red Line'])

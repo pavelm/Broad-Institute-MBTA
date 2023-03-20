@@ -1,10 +1,4 @@
-import logging
-import requests
-import time
-import asyncio
-import aiohttp
-
-from problem1 import filter_subway_routes, get_long_names
+from problem1 import get_long_names
 from problem2 import *
 
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
@@ -64,7 +58,7 @@ def get_line_dict(connecting_stops, route_stops):
 
 
 # https://stackabuse.com/courses/graphs-in-python-theory-and-implementation/lessons/depth-first-search-dfs-algorithm/
-# depth first search graph searching algorithm refactored to MBTA 
+# depth first search graph searching algorithm refactored to MBTA
 def dfs(start, target, line_dict):
     path = []
     visited = set()
@@ -90,11 +84,7 @@ def dfs(start, target, line_dict):
 
 
 # finds the path of a starting and final destination
-def find_subway_path(route_stops_dict, line_dict):
-
-    start = input("Starting point station: ")
-
-    finish = input("Final point station: ")
+def find_subway_path(start, finish, route_stops_dict, line_dict):
 
     starting_location_subway_line = ""
 
@@ -120,6 +110,10 @@ def find_subway_path(route_stops_dict, line_dict):
 
 def main():
 
+    start_location = input("Starting point station: ")
+
+    finish_location = input("Final point station: ")
+
     start = time.time()
 
     # gets the list of subway route ids
@@ -142,7 +136,7 @@ def main():
 
     line_dict = get_line_dict(routes_connecting_stop_dict, route_stops)
 
-    logging.info(find_subway_path(route_stops, line_dict))
+    logging.info(find_subway_path(start_location, finish_location, route_stops, line_dict))
 
     end = time.time()
 
