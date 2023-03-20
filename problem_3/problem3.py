@@ -3,17 +3,16 @@ import requests
 import time
 import asyncio
 import aiohttp
+import sys
 
 logging.basicConfig(level=logging.INFO)
 
 
 def filter_subway_routes():
     # Rely on the server API to filter before results are received
-    start = time.time()
     r = requests.get('https://api-v3.mbta.com/routes?filter[type]=0,1',
                      headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"})
 
-    end = time.time()
 
     # gets the data from the api filter
     data = r.json()['data']
@@ -46,6 +45,10 @@ async def get_route_stops():
     for subway_route in filter_subway_routes():
         list_of_subway_route_ids.append(subway_route['id'])
 
+    list_of_subway_route_long_names = []
+    for subway_route in filter_subway_routes():
+        list_of_subway_route_long_names.append(subway_route['attributes']['long_name'])
+
     async with aiohttp.ClientSession() as session:
 
         tasks = get_tasks(session, list_of_subway_route_ids)
@@ -58,9 +61,9 @@ async def get_route_stops():
 
             subway_line_data = subway_line_data['data']
 
-            route_stop_dict[list_of_subway_route_ids[index]] = []
+            route_stop_dict[list_of_subway_route_long_names[index]] = []
             for stops in subway_line_data:
-                route_stop_dict[list_of_subway_route_ids[index]].append((stops['attributes']['name']))
+                route_stop_dict[list_of_subway_route_long_names[index]].append((stops['attributes']['name']))
 
         return route_stop_dict
 
@@ -137,7 +140,10 @@ def get_line_dict(connecting_stops, route_stops):
 
 
 # https://stackabuse.com/courses/graphs-in-python-theory-and-implementation/lessons/depth-first-search-dfs-algorithm/
-def dfs(start, target, line_dict, path=[], visited=set()):
+def dfs(start, target, line_dict):
+    path=[]
+    visited=set()
+
     path.append(start)
     visited.add(start)
 
@@ -151,7 +157,7 @@ def dfs(start, target, line_dict, path=[], visited=set()):
                 path.append(target)
                 return path
 
-            result = dfs(neighbour, target, path, visited, line_dict)
+            result = dfs(neighbour, target, line_dict, path, visited)
             if result is not None:
                 return result
     path.pop()
@@ -159,6 +165,7 @@ def dfs(start, target, line_dict, path=[], visited=set()):
 
 
 def find_subway_path(start, finish, route_stops_dict, line_dict):
+
     starting_location_subway_line = ""
     end_location_subway_line = ""
 
@@ -173,21 +180,31 @@ def find_subway_path(start, finish, route_stops_dict, line_dict):
             end_location_subway_line = subway_route
             break
 
+    if starting_location_subway_line == "" or end_location_subway_line == "":
+        logging.ERROR("Starting or Finish location does not exist")
+        return ""
 
     return dfs(starting_location_subway_line, end_location_subway_line, line_dict)
 
 
 def main():
 
-    
+    starting_stop = input("Starting point station: ")
+    final_stop = input("Final point station: ")
+
+    start = time.time()
+
     route_stops_dict = asyncio.run(get_route_stops())
     all_stops = get_all_stops(route_stops_dict)
     connecting_stops = get_connecting_stops(all_stops)
     connecting_stops_dict = get_routes_of_connecting_stops(connecting_stops, route_stops_dict)
 
-    line_dict = get_line_dict(connecting_stops_dict,  route_stops_dict)
+    line_dict = get_line_dict(connecting_stops_dict, route_stops_dict)
 
-    logging.info(find_subway_path("Ashmont", "Arlington", route_stops_dict, line_dict))
+    logging.info(find_subway_path(starting_stop, final_stop, route_stops_dict, line_dict))
+    end = time.time()
+
+    logging.info("Time: " + str(end - start))
 
 
 main()
