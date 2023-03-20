@@ -64,6 +64,7 @@ def get_line_dict(connecting_stops, route_stops):
 
 
 # https://stackabuse.com/courses/graphs-in-python-theory-and-implementation/lessons/depth-first-search-dfs-algorithm/
+# depth first search graph searching algorithm refactored to MBTA 
 def dfs(start, target, line_dict):
     path = []
     visited = set()
@@ -88,8 +89,15 @@ def dfs(start, target, line_dict):
     return None
 
 
-def find_subway_path(start, finish, route_stops_dict, line_dict):
+# finds the path of a starting and final destination
+def find_subway_path(route_stops_dict, line_dict):
+
+    start = input("Starting point station: ")
+
+    finish = input("Final point station: ")
+
     starting_location_subway_line = ""
+
     end_location_subway_line = ""
 
     # instead of thinking about stop - stop, thinking about line - line is easier
@@ -111,8 +119,6 @@ def find_subway_path(start, finish, route_stops_dict, line_dict):
 
 
 def main():
-    starting_stop = input("Starting point station: ")
-    final_stop = input("Final point station: ")
 
     start = time.time()
 
@@ -136,11 +142,12 @@ def main():
 
     line_dict = get_line_dict(routes_connecting_stop_dict, route_stops)
 
-    logging.info(find_subway_path(starting_stop, final_stop, route_stops, line_dict))
+    logging.info(find_subway_path(route_stops, line_dict))
 
     end = time.time()
 
     logging.info("Time: " + str(end - start))
 
 
-main()
+if __name__ == '__main__':
+    main()
