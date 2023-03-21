@@ -61,7 +61,7 @@ def get_line_dict(connecting_stops, route_stops):
 
 
 # https://stackabuse.com/courses/graphs-in-python-theory-and-implementation/lessons/depth-first-search-dfs-algorithm/
-# depth first search graph searching algorithm refactored to MBTA
+# depth first search graph searching algorithm traverses as far as it can go down one branch until it has to backtrack
 def dfs(start, target, line_dict, path=[], visited=set()):
 
     path.append(start)
@@ -142,7 +142,7 @@ def main():
 
     end = time.time()
 
-    logging.info("Time: " + str(end - start))
+    logging.info("Run time: " + str(end - start))
 
 
 if __name__ == '__main__':

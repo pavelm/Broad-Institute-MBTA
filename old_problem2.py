@@ -1,8 +1,6 @@
 import requests
 import logging
 import time
-import json
-import asyncio
 
 logging.basicConfig(level=logging.INFO)
 
@@ -10,11 +8,8 @@ logging.basicConfig(level=logging.INFO)
 # purpose: returns a list of routes with the specific filter given in the arguments
 def filter_subway_routes():
     # Rely on the server API to filter before results are received
-    start = time.time()
     r = requests.get('https://api-v3.mbta.com/routes?filter[type]=0,1',
                      headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"})
-
-    end = time.time()
 
     # gets the data from the api filter
     data = r.json()['data']
@@ -147,8 +142,6 @@ def print_all_routes_of_connecting_stops():
         logging.info("Routes at " + connecting_stop + ": " + str(list_of_route_names) + "\n")
 
 
-
-
 def main():
 
     start = time.time()
@@ -157,10 +150,7 @@ def main():
     print_all_routes_of_connecting_stops()
     end = time.time()
 
-
-    logging.info(end-start)
-
-
+    logging.info("Run time: " + str(end - start))
 
 
 if __name__ == "__main__":
