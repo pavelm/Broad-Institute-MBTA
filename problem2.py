@@ -34,17 +34,19 @@ def get_tasks(session, list_of_subway_route_ids):
 
 
 # gets a dictionary of routes and their corresponding stops
+# https://www.youtube.com/watch?v=nFn4_nA_yk8
+# https://groups.google.com/g/massdotdevelopers/c/WiJUyGIpHdI
 async def get_route_stops(list_of_subway_route_ids):
-    # https://groups.google.com/g/massdotdevelopers/c/WiJUyGIpHdI
-
     async with aiohttp.ClientSession() as session:
 
         tasks = get_tasks(session, list_of_subway_route_ids)
         data = await asyncio.gather(*tasks)
 
+        # create an empty dictionary
         route_stop_dict = {}
 
         for index in range(len(data)):
+            # get teh subway line data
             subway_line_data = await (data[index]).json()
 
             subway_line_data = subway_line_data['data']
@@ -89,20 +91,18 @@ def get_all_stops(route_stops):
 
 # A list of the stops that connect two or more subway routes along with the relevant route names for each of those stops
 def get_connecting_stops(all_stops):
-    # list of all subway stops
-
     # list of connecting stops
-    connecting_stops = []
+    connecting_stops = set()
 
     # loop through each stop in all the subway stops
     for stop in all_stops:
 
         # if there are more than one stop, then it is a connecting stop
         # check if the stop is already in the list (for the purpose of duplication)
-        if all_stops.count(stop) > 1 and connecting_stops.count(stop) == 0:
-            connecting_stops.append(stop)
+        if all_stops.count(stop) > 1:
+            connecting_stops.add(stop)
 
-    return connecting_stops
+    return list(connecting_stops)
 
 
 # gets the routes of all the connecting stops that travels through it
@@ -115,7 +115,7 @@ def get_routes_of_connecting_stops(connecting_stops, route_stop_dict):
         # for each connecting stop
         for connecting_stop in connecting_stops:
 
-            # if connecting stop is not accounted for, add connecting stop to dictionary with current route as key
+            # if connecting stop is not accounted for, set connecting stop to dictionary with current route as key
             if connecting_stop in route_stop_dict[route] and connecting_stop not in connecting_stops_dict:
                 connecting_stops_dict[connecting_stop] = [route]
 

@@ -15,6 +15,7 @@ def get_tasks(session, list_of_subway_route_ids):
 
 async def get_route_stops(list_of_subway_route_ids, list_of_subway_route_long_names):
     # https://groups.google.com/g/massdotdevelopers/c/WiJUyGIpHdI
+    # https://docs.python.org/3/library/asyncio-task.html#coroutines
 
     async with aiohttp.ClientSession() as session:
 
@@ -46,11 +47,13 @@ def get_line_dict(connecting_stops, route_stops):
         # for each connecting_stop list
         for connecting_stops_lists in connecting_stops.values():
 
-            # if the route_id is in the list, we want to add all of the lines except for the id
+            # if the route_id is in the list, we want to add all the lines except for the id
             if route_id in connecting_stops_lists:
 
+                # for each stop in the connecting_stop_lists
                 for stop in connecting_stops_lists:
 
+                    # if the stop does not equal to the route_id and the stop is not in the line_dict for the route id
                     if stop != route_id and stop not in line_dict[route_id]:
                         line_dict[route_id].append(stop)
 
@@ -132,6 +135,7 @@ def main():
     # stops on route line that are connecting to other route lines
     routes_connecting_stop_dict = get_routes_of_connecting_stops(connecting_stops, route_stops)
 
+    # line dictionary
     line_dict = get_line_dict(routes_connecting_stop_dict, route_stops)
 
     logging.info(find_subway_path(start_location, finish_location, route_stops, line_dict))
