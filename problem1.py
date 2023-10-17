@@ -1,15 +1,25 @@
-import requests
 import logging
 import time
+from enum import IntEnum
+import requests
 
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 
+class RailType(IntEnum):
+    LIGHT = 0
+    HEAVY = 1
+
 
 # returns a list of routes with the specific filter given in the arguments
-def filter_subway_routes():
+# (default to filtering by LIGHT and HEAVY rail types)
+def mbta_subway_routes(apiKey, railType=[RailType.LIGHT, RailType.HEAVY]):
+
+    # converts the enum value to it's integer type and joins all by comma
+    typeFilter = ",".join(map(lambda x: str(x.value), railType))
+
     # Rely on the server API to filter before results are received
-    r = requests.get('https://api-v3.mbta.com/routes?filter[type]=0,1',
-                     headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"})
+    r = requests.get(f'https://api-v3.mbta.com/routes?filter[type]={typeFilter}',
+                     headers={"x-api-key": apiKey})
 
     # gets the data from the api filter
     data = r.json()['data']
@@ -26,28 +36,21 @@ def filter_subway_routes():
 
 # gets the long names of the subway routes
 def get_long_names(list_of_subway_routes):
-    list_of_subway_routes_long_names = []
-
-    for subway_route in list_of_subway_routes:
-        list_of_subway_routes_long_names.append(subway_route['attributes']['long_name'])
-
-    return list_of_subway_routes_long_names
-
-
-# prints the long_name of subway routes
-def print_filtered_subway_routes(list_of_subway_routes_long_names):
-    for subway_route_long_name in list_of_subway_routes_long_names:
-        logging.info(subway_route_long_name)
-
+    return map(lambda subway_route: subway_route['attributes']['long_name'], list_of_subway_routes)
 
 def main():
     start = time.time()
 
-    list_of_filtered_subway_routes = filter_subway_routes()
+    apiKey = "MY_API_KEY"
+
+    list_of_filtered_subway_routes = mbta_subway_routes(apiKey)
 
     list_of_filtered_subway_routes_long_names = get_long_names(list_of_filtered_subway_routes)
 
-    print_filtered_subway_routes(list_of_filtered_subway_routes_long_names)
+
+    # prints the long_name of subway routes
+    for subway_route_long_name in list_of_filtered_subway_routes_long_names:
+        logging.info(subway_route_long_name)
 
     end = time.time()
 

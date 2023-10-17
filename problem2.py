@@ -3,20 +3,14 @@ import time
 import asyncio
 import aiohttp
 
-from problem1 import filter_subway_routes
+from problem1 import mbta_subway_routes
 
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 
 
 # gets the subway route ids of the filtered subway routes
-def get_subway_route_ids():
-    # list of all the subway route id's
-    list_of_subway_route_ids = []
-
-    for subway_route in filter_subway_routes():
-        list_of_subway_route_ids.append(subway_route['id'])
-
-    return list_of_subway_route_ids
+def get_subway_route_ids(subway_routes):
+    return map(lambda subway_route: subway_route['id'], subway_routes)
 
 
 # Coroutines are computer program components that allow execution
@@ -28,6 +22,7 @@ def get_tasks(session, list_of_subway_route_ids):
     tasks = []
     for subway_id in list_of_subway_route_ids:
         tasks.append(asyncio.create_task(
+            # I would create a class that abstracts away all of the querying from mbta.com
             session.get('https://api-v3.mbta.com/stops?filter[route]=' + str(subway_id),
                         headers={"x-api-key": "40ecaac9490140418fea273b1e447bc4"}, ssl=False)))
     return tasks
@@ -137,6 +132,8 @@ def main():
     start = time.time()
 
     # gets the list of subway route ids
+
+    # pass in the api key here
     list_of_subway_route_ids = get_subway_route_ids()
 
     # get the routes and their corresponding stops
