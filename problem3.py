@@ -4,6 +4,8 @@ from problem2 import *
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
 
 
+# this is very similar to problem two, see if you can pull it out to a common file that you
+# import from both
 def get_tasks(session, list_of_subway_route_ids):
     tasks = []
     for subway_id in list_of_subway_route_ids:

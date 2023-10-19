@@ -55,6 +55,7 @@ async def get_route_stops(list_of_subway_route_ids):
 
 
 # sorts the stops in length of stops
+# do you need to sort the stops?
 def sort_route_stops(route_stops):
     #  https://www.freecodecamp.org/news/sort-dictionary-by-value-in-python/
     return dict(sorted(route_stops.items(), key=lambda x: len(x[1])))
@@ -62,12 +63,15 @@ def sort_route_stops(route_stops):
 
 # print the  name of the subway route with the most stops as well as a count of its stops.
 def route_with_most_stops(sorted_route_dict):
-    logging.info("Subway route with the most number of stops: " + str(list(sorted_route_dict.keys())[-1]))
-    logging.info("Stops: " + str(len(list(sorted_route_dict.values())[-1])) + "\n")
+    items = list(sorted_route_dict.items())
+    (route,stops) = items[-1]
+    logging.info("Subway route with the most number of stops: " + str(route))
+    logging.info("Stops: " + str(len(stops)) + "\n")
 
 
 # print the name of the subway route with the fewest stops as well as a count of its stops.
 def route_with_least_stops(sorted_route_dict):
+    #similar implementation as route with most_stops
     logging.info("Subway route with the least number of stops: " + str(list(sorted_route_dict.keys())[0]))
     logging.info("Stops: " + str(len(list(sorted_route_dict.values())[0])) + "\n")
 
@@ -94,6 +98,7 @@ def get_connecting_stops(all_stops):
 
         # if there are more than one stop, then it is a connecting stop
         # check if the stop is already in the list (for the purpose of duplication)
+        #### this is inefficient and creates an O(n^2) runtime
         if all_stops.count(stop) > 1:
             connecting_stops.add(stop)
 
@@ -109,13 +114,15 @@ def get_routes_of_connecting_stops(connecting_stops, route_stop_dict):
 
         # for each connecting stop
         for connecting_stop in connecting_stops:
-
+            # this is relatively expensive and it possibly runs twice if the first condition doesn't hold                     
+            connectingStopInRoute = connecting_stop in route_stop_dict[route]
+            
             # if connecting stop is not accounted for, set connecting stop to dictionary with current route as key
-            if connecting_stop in route_stop_dict[route] and connecting_stop not in connecting_stops_dict:
+            if connectingStopInRoute and connecting_stop not in connecting_stops_dict:
                 connecting_stops_dict[connecting_stop] = [route]
 
             # if connecting stop is accounted for, add current route to list of routes @ connecting stop
-            elif connecting_stop in route_stop_dict[route] and connecting_stop in connecting_stops_dict:
+            elif connectingStopInRoute and connecting_stop in connecting_stops_dict:
                 connecting_stops_dict[connecting_stop] = connecting_stops_dict[connecting_stop] + [route]
 
     return connecting_stops_dict

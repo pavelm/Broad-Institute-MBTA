@@ -36,7 +36,7 @@ def mbta_subway_routes(apiKey, railType=[RailType.LIGHT, RailType.HEAVY]):
 
 # gets the long names of the subway routes
 def get_long_names(list_of_subway_routes):
-    return map(lambda subway_route: subway_route['attributes']['long_name'], list_of_subway_routes)
+    return list(map(lambda subway_route: subway_route['attributes']['long_name'], list_of_subway_routes))
 
 def main():
     start = time.time()
